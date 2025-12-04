@@ -1,0 +1,5 @@
+{
+  "name": "Project Aghoy",
+  "description": "AI-powered scam detector specialized for the Philippine context. Analyzes SMS, emails, and job offers for fraud indicators.",
+  "requestFramePermissions": []
+}

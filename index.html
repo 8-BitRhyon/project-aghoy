@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Project Aghoy</title>
+    <link rel="icon" href="./ProjectAghoyLogo.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'VT323', monospace;
+        background-color: #0f172a; /* Slate 900 */
+        color: #e2e8f0; /* Slate 200 */
+      }
+      
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 16px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #020617; 
+        border-left: 2px solid #1e293b;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #475569; 
+        border: 4px solid #020617; /* Creates padding effect */
+        box-shadow: inset -2px -2px 0px 0px rgba(0,0,0,0.5);
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #64748b; 
+      }
+
+      /* Utility for Pixel Corners (Clip Path) */
+      .pixel-corners {
+        clip-path: polygon(
+          0 10px, 10px 10px, 10px 0,
+          calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px,
+          100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%,
+          10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px)
+        );
+      }
+
+      .pixel-corners-sm {
+        clip-path: polygon(
+          0 4px, 4px 4px, 4px 0,
+          calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px,
+          100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%,
+          4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px)
+        );
+      }
+      
+      .pixelated-img {
+        image-rendering: pixelated;
+      }
+      
+      .text-shadow-retro {
+        text-shadow: 2px 2px 0px #000000;
+      }
+
+      /* Retro CRT Scanline */
+      .scanlines {
+        background: linear-gradient(
+          to bottom,
+          rgba(255,255,255,0),
+          rgba(255,255,255,0) 50%,
+          rgba(0,0,0,0.2) 50%,
+          rgba(0,0,0,0.2)
+        );
+        background-size: 100% 4px;
+        position: fixed;
+        top: 0; right: 0; bottom: 0; left: 0;
+        pointer-events: none;
+        z-index: 50;
+      }
+
+      /* 8-bit Progress Bar Animation */
+      @keyframes pixel-load {
+        0% { width: 0%; }
+        10% { width: 10%; }
+        20% { width: 20%; }
+        30% { width: 30%; }
+        40% { width: 40%; }
+        50% { width: 50%; }
+        60% { width: 60%; }
+        70% { width: 70%; }
+        80% { width: 80%; }
+        90% { width: 90%; }
+        100% { width: 100%; }
+      }
+
+      .animate-pixel-load {
+        animation: pixel-load 1.5s steps(10, end) infinite;
+      }
+      
+      .blink {
+        animation: blink 1s step-end infinite;
+      }
+      
+      @keyframes blink {
+        50% { opacity: 0; }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "html2canvas": "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "url": "https://aistudiocdn.com/url@^0.11.4"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div class="scanlines"></div>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
