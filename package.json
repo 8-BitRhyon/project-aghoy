@@ -23,3 +23,5 @@
     "vite": "^6.2.0"
   }
 }
+
+npm install -D tailwindcss postcss autoprefixer
