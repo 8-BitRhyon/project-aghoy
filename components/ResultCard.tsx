@@ -11,6 +11,7 @@ import { getFlagDefinition } from '../utils/flagDefinitions';
 // --- 1. CONFIGURATION & HELPERS ---
 
 const OFFICIAL_CHANNELS = [
+  // 1. POLICE (Immediate Action)
   { 
     href: "https://acg.pnp.gov.ph/contact-us/", 
     label: "PNP-ACG", 
@@ -33,11 +34,13 @@ const OFFICIAL_CHANNELS = [
     bgIcon: "bg-green-900/30 border-green-800", 
     groupHoverText: "group-hover:text-green-400" 
   },
+  
+  // 2. FINANCIAL REGULATORS (For Money Recovery/Reports)
   { 
-    href: "https://www.sec.gov.ph/investor-protection/email-us/", 
-    label: "SEC-EPD", 
-    desc: "Investment Protection", 
-    action: "REPORT FAKE INVESTMENTS", 
+    href: "mailto:epd@sec.gov.ph", // Direct email per screenshot
+    label: "SEC-EIPD", 
+    desc: "Investments & Lending", 
+    action: "EMAIL COMPLAINT", 
     Icon: Scale, 
     colorClass: "text-yellow-400", 
     hoverBorder: "hover:border-yellow-500", 
@@ -45,9 +48,9 @@ const OFFICIAL_CHANNELS = [
     groupHoverText: "group-hover:text-yellow-400" 
   },
   { 
-    href: "https://www.bsp.gov.ph/Pages/InclusiveFinance/ConsumerAssistanceChannels.aspx", 
-    label: "BSP", 
-    desc: "Central Bank", 
+    href: "https://www.bsp.gov.ph/Pages/InclusiveFinance/ConsumerAssistanceChannelsChatbot.aspx", 
+    label: "BSP-BOB", 
+    desc: "Central Bank Chatbot", 
     action: "FILE BANK COMPLAINT", 
     Icon: Landmark, 
     colorClass: "text-indigo-400", 
@@ -55,16 +58,18 @@ const OFFICIAL_CHANNELS = [
     bgIcon: "bg-indigo-900/30 border-indigo-800", 
     groupHoverText: "group-hover:text-indigo-400" 
   },
+
+  // 3. TELECOM & INVESTIGATION (Spam Prevention)
   { 
-    href: "https://nbi.gov.ph/contact/", 
-    label: "NBI-CCD", 
-    desc: "Cybercrime Division", 
-    action: "REQUEST INVESTIGATION", 
-    Icon: Building2, 
-    colorClass: "text-slate-400", 
-    hoverBorder: "hover:border-slate-500", 
-    bgIcon: "bg-slate-900/30 border-slate-800", 
-    groupHoverText: "group-hover:text-slate-400" 
+    href: "https://www.globe.com.ph/stop-spam", 
+    label: "GLOBE", 
+    desc: "Stop Spam Portal", 
+    action: "REPORT SCAM NUMBER", 
+    Icon: Smartphone, 
+    colorClass: "text-blue-300", 
+    hoverBorder: "hover:border-blue-400", 
+    bgIcon: "bg-blue-800/30 border-blue-700", 
+    groupHoverText: "group-hover:text-blue-300" 
   },
   { 
     href: "https://ntc.gov.ph/text-spam-spam-report/", 
