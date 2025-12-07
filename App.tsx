@@ -216,12 +216,12 @@ const App: React.FC = () => {
                 {/* Input Section */}
                 {!result && (
                     <div className="space-y-4 max-w-3xl mx-auto">
-                        <div className="bg-black p-1 border-2 border-slate-600 relative group">
+                        <div className="bg-black p-1 border-2 border-slate-600 relative group flex flex-col">
                             <textarea
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Paste text message, email, job offer details, or paste an image (Ctrl+V)..."
-                                className="w-full h-40 bg-slate-900 text-green-400 p-4 font-mono text-lg focus:outline-none placeholder:text-slate-600 resize-none"
+                                className="w-full h-40 bg-slate-900 text-green-400 p-4 font-mono text-lg focus:outline-none placeholder:text-slate-600 resize-none flex-1 block"
                             />
                             <div className="absolute bottom-2 right-2 flex gap-2">
                                 <input 
