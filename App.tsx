@@ -8,6 +8,26 @@ import AboutModal from './components/AboutModal';
 import PixelLogo from './components/PixelLogo';
 import { playSound } from './utils/sound';
 
+// QUICK TRY EXAMPLES
+const SCAM_EXAMPLES = [
+  { 
+    label: 'Task Scam', 
+    text: 'Good day! We are hiring part-time employees. Earn ₱500-₱2000/day by just liking YouTube videos. No fees collected. Contact wa.me/12345678' 
+  },
+  { 
+    label: 'Fake GCash', 
+    text: 'GCash Warning: Your account has been restricted due to suspicious activity. Verify now at https://g-cash-verify.com to avoid suspension.' 
+  },
+  { 
+    label: 'Love Scam', 
+    text: 'Hello dear, I am Engineer James from US. I have a package for you with $50,000 inside but it is stuck at customs. Please send fee to release it.' 
+  },
+  { 
+    label: 'Investment', 
+    text: 'Invest 500 pesos and get 5000 pesos return in just 3 days! Proven and tested. PM me how.' 
+  }
+];
+
 const App: React.FC = () => {
   const [input, setInput] = useState('');
   const [language, setLanguage] = useState('TAGALOG');
@@ -20,9 +40,9 @@ const App: React.FC = () => {
   const [showAbout, setShowAbout] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Auto-resize Logic
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -172,9 +192,9 @@ const App: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 mb-8">
         <div className="p-4 md:p-6 bg-slate-800 min-h-[60vh] border-x-4 border-b-4 border-slate-700 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
             
-            {/* Language Selector (Global for both modes) */}
+            {/* Language Selector */}
             <div className="mb-6 flex justify-end">
-                <div className="inline-flex bg-black border-2 border-slate-600 p-1">
+                <div className="grid grid-cols-4 md:inline-flex bg-black border-2 border-slate-600 p-1 gap-1 md:gap-0 w-full md:w-auto">
                     {['TAGALOG', 'BISAYA', 'ILOCANO', 'ENGLISH'].map((lang) => (
                     <button
                         key={lang}
@@ -182,7 +202,7 @@ const App: React.FC = () => {
                             playSound('click');
                             setLanguage(lang);
                         }}
-                        className={`px-3 py-1 text-xs md:text-sm font-['Press_Start_2P'] transition-colors ${
+                        className={`px-3 py-2 md:py-1 text-[10px] md:text-sm font-['Press_Start_2P'] transition-colors w-full text-center ${
                         language === lang ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-300'
                         }`}
                     >
@@ -226,6 +246,26 @@ const App: React.FC = () => {
                 {/* Input Section */}
                 {!result && (
                     <div className="space-y-4 max-w-3xl mx-auto">
+                        
+                        {/* Quick Try Buttons */}
+                        <div className="mb-4">
+                          <p className="text-slate-400 text-xs font-['Press_Start_2P'] mb-2 uppercase">Quick Try:</p>
+                          <div className="grid grid-cols-2 md:flex gap-2">
+                            {SCAM_EXAMPLES.map((ex, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => {
+                                  playSound('click');
+                                  setInput(ex.text);
+                                }}
+                                className="px-3 py-2 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 hover:border-cyan-400 text-slate-300 text-xs font-mono text-left transition-all truncate"
+                              >
+                                &gt; {ex.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
                         <div className="bg-black p-1 border-2 border-slate-600 relative group flex flex-col">
                             <textarea
                                 ref={textareaRef}
@@ -271,6 +311,14 @@ const App: React.FC = () => {
                                 <><Search /> ANALYZE_THREAT</>
                             )}
                         </button>
+
+                        {/* Privacy Lock Disclaimer */}
+                        <div className="mt-4 flex items-center justify-center gap-2 text-slate-500 opacity-60">
+                          <Lock className="w-3 h-3" />
+                          <p className="text-[10px] font-mono uppercase">
+                            Secure Analysis. Your data is processed privately.
+                          </p>
+                        </div>
                         
                         {error && (
                             <div className="p-4 bg-red-900/50 border-2 border-red-500 text-red-200 flex items-center gap-3 font-mono">
