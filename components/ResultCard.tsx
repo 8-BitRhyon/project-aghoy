@@ -4,11 +4,11 @@ import { AnalysisResult, Verdict } from '../types';
 import RiskGauge from './RiskGauge';
 import FamilyWarningCard from './FamilyWarningCard';
 import FlagKnowledgeModal from './FlagKnowledgeModal';
-import { ShieldCheck, ShieldAlert, AlertTriangle, ChevronRight, BookOpen, Copy, Check, Phone, Globe, Share2, Building2, Mail, Lock, FileText, Smartphone, Info, ExternalLink } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, AlertTriangle, ChevronRight, BookOpen, Copy, Check, Phone, Globe, Share2, Building2, Mail, Lock, FileText, Smartphone, Info } from 'lucide-react';
 import { playSound } from '../utils/sound';
 import { getFlagDefinition } from '../utils/flagDefinitions';
 
-// --- 1. CONFIGURATION & HELPERS (Moved outside to prevent re-creation on render) ---
+// --- 1. CONFIGURATION & HELPERS ---
 
 const OFFICIAL_CHANNELS = [
   { href: "https://acg.pnp.gov.ph/contact-us/", label: "PNP-ACG", desc: "Anti-Cybercrime Group", action: "FILE POLICE COMPLAINT", Icon: Globe, colorClass: "text-blue-400", hoverBorder: "hover:border-blue-500", bgIcon: "bg-blue-900/30 border-blue-800", groupHoverText: "group-hover:text-blue-400" },
@@ -30,7 +30,7 @@ const getVerdictStyle = (verdict: Verdict) => {
   }
 };
 
-// --- 2. SUB-COMPONENTS (For cleaner main render) ---
+// --- 2. SUB-COMPONENTS ---
 
 const VictimAssistanceGuide: React.FC = () => (
   <div className="border-[4px] border-red-900 bg-red-950/30 p-3 md:p-6 relative overflow-hidden">
@@ -44,14 +44,24 @@ const VictimAssistanceGuide: React.FC = () => (
         <div className="flex-shrink-0 w-8 h-8 md:w-12 md:h-12 bg-red-900/50 border-2 border-red-500 flex items-center justify-center text-red-400 font-bold text-base md:text-2xl font-['Press_Start_2P'] shadow-[2px_2px_0_0_rgba(220,38,38,0.5)]">1</div>
         <div>
           <h5 className="text-red-300 font-bold text-base md:text-2xl mb-1 flex items-center gap-2"><Lock className="w-4 h-4 md:w-6 md:h-6" /> FREEZE FUNDS</h5>
-          <p className="leading-tight mb-1 text-sm md:text-lg">Contact support to <strong>LOCK</strong> accounts.</p>
-          <ul className="text-sm md:text-lg text-slate-400 list-none space-y-0.5 border-l-2 border-red-900/50 pl-2">
-            <li><span className="text-blue-400 font-bold">[GCash]</span> Gigi Chat</li>
-            <li><span className="text-green-400 font-bold">[Maya]</span> Call *788</li>
-            <li><span className="text-yellow-400 font-bold">[Banks]</span> Call Hotline</li>
+          <p className="leading-tight mb-2 text-sm md:text-lg">Contact support immediately to <strong>LOCK</strong> accounts.</p>
+          <ul className="text-sm md:text-lg text-slate-400 list-none space-y-1 border-l-2 border-red-900/50 pl-2">
+            <li>
+              <span className="text-blue-400 font-bold">[GCash]</span> <a href="tel:2882" className="hover:text-white underline decoration-dotted transition-colors">Dial 2882</a>
+            </li>
+            <li>
+              <span className="text-green-400 font-bold">[Maya]</span> <a href="tel:*788" className="hover:text-white underline decoration-dotted transition-colors">Dial *788</a>
+            </li>
+            <li>
+              <span className="text-blue-300 font-bold">[BDO]</span> <a href="tel:0286318000" className="hover:text-white underline decoration-dotted transition-colors">(02) 8631-8000</a>
+            </li>
+            <li>
+              <span className="text-red-400 font-bold">[BPI]</span> <a href="tel:02888910000" className="hover:text-white underline decoration-dotted transition-colors">(02) 889-10000</a>
+            </li>
           </ul>
         </div>
       </div>
+
       {/* Step 2 */}
       <div className="flex md:flex-col gap-3 md:gap-2">
         <div className="flex-shrink-0 w-8 h-8 md:w-12 md:h-12 bg-orange-900/50 border-2 border-orange-500 flex items-center justify-center text-orange-400 font-bold text-base md:text-2xl font-['Press_Start_2P'] shadow-[2px_2px_0_0_rgba(234,88,12,0.5)]">2</div>
@@ -65,6 +75,7 @@ const VictimAssistanceGuide: React.FC = () => (
           </ul>
         </div>
       </div>
+
       {/* Step 3 */}
       <div className="flex md:flex-col gap-3 md:gap-2">
         <div className="flex-shrink-0 w-8 h-8 md:w-12 md:h-12 bg-slate-800 border-2 border-slate-500 flex items-center justify-center text-slate-400 font-bold text-base md:text-2xl font-['Press_Start_2P'] shadow-[2px_2px_0_0_rgba(100,116,139,0.5)]">3</div>
