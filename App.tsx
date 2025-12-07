@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Loader2, Search, Info, Lock, AlertOctagon, Image as ImageIcon, X, Bot, Menu, Coffee, History } from 'lucide-react';
+import { Loader2, Search, Info, Lock, AlertOctagon, Image as ImageIcon, X, Bot, Coffee, History } from 'lucide-react';
 import { analyzeContent } from './services/geminiService';
 import { AnalysisResult, Verdict } from './types';
 import ResultCard from './components/ResultCard';
@@ -7,8 +7,10 @@ import Dojo from './components/Dojo';
 import AboutModal from './components/AboutModal';
 import PixelLogo from './components/PixelLogo';
 import StatsPanel from './components/StatsPanel';
-import HistoryLog from './components/HistoryLog'; // New Import
+import HistoryLog from './components/HistoryLog';
+import PrivacyConsent from './components/PrivacyConsent';
 import { playSound } from './utils/sound';
+import { sanitizeText } from './utils/privacy';
 
 // QUICK TRY EXAMPLES
 const SCAM_EXAMPLES = [
@@ -30,7 +32,6 @@ const SCAM_EXAMPLES = [
   }
 ];
 
-// Stats Interface
 interface UserStats {
   totalScans: number;
   highRiskCount: number;
@@ -47,16 +48,14 @@ const App: React.FC = () => {
   const [imageMimeType, setImageMimeType] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'SCANNER' | 'DOJO'>('SCANNER');
   const [showAbout, setShowAbout] = useState(false);
-  const [showHistory, setShowHistory] = useState(false); // History Modal State
+  const [showHistory, setShowHistory] = useState(false);
   
-  // State for Stats & History
   const [stats, setStats] = useState<UserStats>({ totalScans: 0, highRiskCount: 0, scamsBlocked: 0 });
   const [scanHistory, setScanHistory] = useState<AnalysisResult[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load Stats & History on Mount
   useEffect(() => {
     const savedStats = localStorage.getItem('aghoy_stats');
     if (savedStats) setStats(JSON.parse(savedStats));
@@ -65,7 +64,6 @@ const App: React.FC = () => {
     if (savedHistory) setScanHistory(JSON.parse(savedHistory));
   }, []);
 
-  // Auto-resize Logic
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -74,7 +72,6 @@ const App: React.FC = () => {
     }
   }, [input]);
 
-  // Global Paste Listener for Image
   useEffect(() => {
     const handleGlobalPaste = (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
@@ -105,7 +102,6 @@ const App: React.FC = () => {
   }, []);
 
   const updateStatsAndHistory = (analysis: AnalysisResult) => {
-    // 1. Update Stats
     const newStats = { ...stats };
     newStats.totalScans += 1;
     if (analysis.verdict === 'HIGH_RISK') {
@@ -117,8 +113,13 @@ const App: React.FC = () => {
     setStats(newStats);
     localStorage.setItem('aghoy_stats', JSON.stringify(newStats));
 
-    // 2. Update History (Limit to last 20 items to save space)
-    const newHistory = [analysis, ...scanHistory].slice(0, 20);
+    const safeAnalysis = {
+      ...analysis,
+      analysis: sanitizeText(analysis.analysis), 
+      senderEntity: analysis.senderEntity ? sanitizeText(analysis.senderEntity) : undefined
+    };
+
+    const newHistory = [safeAnalysis, ...scanHistory].slice(0, 20);
     setScanHistory(newHistory);
     localStorage.setItem('aghoy_history', JSON.stringify(newHistory));
   };
@@ -141,7 +142,7 @@ const App: React.FC = () => {
       playSound('scan');
       const analysis = await analyzeContent(input, language, selectedImage || undefined, imageMimeType || undefined);
       setResult(analysis);
-      updateStatsAndHistory(analysis); // Save everything
+      updateStatsAndHistory(analysis);
 
       if (analysis.verdict === 'SAFE') {
         playSound('success');
@@ -180,13 +181,14 @@ const App: React.FC = () => {
     <div className="min-h-screen pb-20 relative flex flex-col">
        <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
        
-       {/* New History Modal */}
        <HistoryLog 
           isOpen={showHistory} 
           onClose={() => setShowHistory(false)} 
           history={scanHistory} 
           onClear={clearHistory}
        />
+
+      <PrivacyConsent />
 
       {/* Top Banner */}
       <div className="bg-slate-900 border-b-4 border-slate-700 p-4 sticky top-0 z-40 shadow-xl">
@@ -213,7 +215,6 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto mt-6 px-4 w-full">
         <div className="flex border-b-4 border-slate-700">
            <button 
@@ -241,7 +242,6 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 mb-8 w-full flex-grow">
         <div className="p-4 md:p-6 bg-slate-800 min-h-[60vh] border-x-4 border-b-4 border-slate-700 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
             
@@ -263,8 +263,6 @@ const App: React.FC = () => {
 
             {activeTab === 'SCANNER' ? (
             <div className="animate-fade-in">
-                
-                {/* Stats & History Buttons */}
                 {stats.totalScans > 0 && !result && (
                    <div className="relative">
                        <StatsPanel stats={stats} />
@@ -280,7 +278,6 @@ const App: React.FC = () => {
                    </div>
                 )}
 
-                {/* Aghoy Character */}
                 <div className="flex flex-col items-center justify-center my-4 md:my-8">
                     <div className={`transition-all duration-500 ${
                         result?.verdict === Verdict.HIGH_RISK ? 'animate-pulse' : 
@@ -307,11 +304,8 @@ const App: React.FC = () => {
                     </p>
                 </div>
 
-                {/* Input Section */}
                 {!result && (
                     <div className="space-y-4 max-w-3xl mx-auto">
-                        
-                        {/* Quick Try Buttons */}
                         <div className="mb-4">
                           <p className="text-slate-400 text-xs font-['Press_Start_2P'] mb-2 uppercase">Quick Try:</p>
                           <div className="grid grid-cols-2 md:flex gap-2">
@@ -398,7 +392,6 @@ const App: React.FC = () => {
                     </div>
                 )}
 
-                {/* Results Section */}
                 {result && (
                     <ResultCard 
                         result={result} 
@@ -420,7 +413,6 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Footer with Donation & About */}
       <div className="text-center py-6 text-slate-600 font-['VT323'] text-lg mt-auto">
          <p>SECURE THE PHILIPPINES • ONE SCAN AT A TIME</p>
          
