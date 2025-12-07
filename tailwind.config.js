@@ -16,6 +16,9 @@ export default {
         'fade-in': 'fadeIn 0.5s ease-in',
         'float': 'float 3s ease-in-out infinite',
         'pixel-load': 'pixel-load 1.5s steps(10, end) infinite',
+        'bounce': 'bounce 1s infinite',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'spin': 'spin 1s linear infinite',
       },
       keyframes: {
         fadeIn: {
