@@ -32,7 +32,8 @@ const getVerdictStyle = (verdict: Verdict) => {
 
 // --- 2. SUB-COMPONENTS ---
 
-const VictimAssistanceGuide: React.FC = () => (
+// IMPORTANT: We now accept detectedEntity to pass it down
+const VictimAssistanceGuide: React.FC<{ detectedEntity?: string }> = ({ detectedEntity }) => (
   <div className="border-[4px] border-red-900 bg-red-950/30 p-3 md:p-6 relative overflow-hidden">
     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-orange-500 to-red-600 animate-pulse"></div>
     <h4 className="text-red-400 text-[10px] md:text-sm font-['Press_Start_2P'] mb-4 flex items-center gap-2 uppercase tracking-wide">
@@ -56,7 +57,7 @@ const VictimAssistanceGuide: React.FC = () => (
               <span className="text-blue-300 font-bold">[BDO]</span> <a href="tel:0286318000" className="hover:text-white underline decoration-dotted transition-colors">(02) 8631-8000</a>
             </li>
             <li>
-              <span className="text-red-400 font-bold">[BPI]</span> <a href="tel:02888910000" className="hover:text-white underline decoration-dotted transition-colors">(02) 889-10000</a>
+              <span className="text-red-400 font-bold">[BPI]</span> <a href="tel:0288910000" className="hover:text-white underline decoration-dotted transition-colors">(02) 889-10000</a>
             </li>
           </ul>
         </div>
@@ -88,7 +89,8 @@ const VictimAssistanceGuide: React.FC = () => (
     
     <div className="mt-4">
       <h5 className="text-slate-500 text-xs font-['Press_Start_2P'] mb-2 uppercase">Direct Support Line:</h5>
-      <SmartSupport />
+      {/* Pass the detected entity to SmartSupport */}
+      <SmartSupport detectedEntity={detectedEntity} />
     </div>
   </div>
 );
@@ -295,7 +297,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onReset }) => {
               )}
 
               {/* Victim Assistance (includes SmartSupport) */}
-              {isSuspiciousOrHigh && <VictimAssistanceGuide />}
+              {isSuspiciousOrHigh && <VictimAssistanceGuide detectedEntity={result.senderEntity || result.scamType} />}
             </div>
           </div>
 
