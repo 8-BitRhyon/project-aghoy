@@ -1,20 +1,82 @@
+import { ShieldCheck, ShieldAlert, AlertTriangle, ChevronRight, BookOpen, Copy, Check, Phone, Globe, Share2, Building2, Mail, Lock, FileText, Smartphone, Info, Landmark, Scale } from 'lucide-react';
 import SmartSupport from './SmartSupport';
 import React, { useState, useEffect } from 'react';
 import { AnalysisResult, Verdict } from '../types';
 import RiskGauge from './RiskGauge';
 import FamilyWarningCard from './FamilyWarningCard';
 import FlagKnowledgeModal from './FlagKnowledgeModal';
-import { ShieldCheck, ShieldAlert, AlertTriangle, ChevronRight, BookOpen, Copy, Check, Phone, Globe, Share2, Building2, Mail, Lock, FileText, Smartphone, Info } from 'lucide-react';
 import { playSound } from '../utils/sound';
 import { getFlagDefinition } from '../utils/flagDefinitions';
 
 // --- 1. CONFIGURATION & HELPERS ---
 
 const OFFICIAL_CHANNELS = [
-  { href: "https://acg.pnp.gov.ph/contact-us/", label: "PNP-ACG", desc: "Anti-Cybercrime Group", action: "FILE POLICE COMPLAINT", Icon: Globe, colorClass: "text-blue-400", hoverBorder: "hover:border-blue-500", bgIcon: "bg-blue-900/30 border-blue-800", groupHoverText: "group-hover:text-blue-400" },
-  { href: "tel:1326", label: "CICC", desc: "Investigation Center", action: "DIAL 1326 HOTLINE", Icon: Phone, colorClass: "text-green-400", hoverBorder: "hover:border-green-500", bgIcon: "bg-green-900/30 border-green-800", groupHoverText: "group-hover:text-green-400" },
-  { href: "https://nbi.gov.ph/contact/", label: "NBI-CCD", desc: "Cybercrime Division", action: "REQUEST INVESTIGATION", Icon: Building2, colorClass: "text-indigo-400", hoverBorder: "hover:border-indigo-500", bgIcon: "bg-indigo-900/30 border-indigo-800", groupHoverText: "group-hover:text-indigo-400" },
-  { href: "https://ntc.gov.ph/text-spam-spam-report/", label: "NTC", desc: "Telecom Commission", action: "REPORT SPAM NUMBER", Icon: Mail, colorClass: "text-yellow-400", hoverBorder: "hover:border-yellow-500", bgIcon: "bg-yellow-900/30 border-yellow-800", groupHoverText: "group-hover:text-yellow-400" }
+  { 
+    href: "https://acg.pnp.gov.ph/contact-us/", 
+    label: "PNP-ACG", 
+    desc: "Anti-Cybercrime Group", 
+    action: "FILE POLICE COMPLAINT", 
+    Icon: Globe, 
+    colorClass: "text-blue-400", 
+    hoverBorder: "hover:border-blue-500", 
+    bgIcon: "bg-blue-900/30 border-blue-800", 
+    groupHoverText: "group-hover:text-blue-400" 
+  },
+  { 
+    href: "tel:1326", 
+    label: "CICC", 
+    desc: "Investigation Center", 
+    action: "DIAL 1326 HOTLINE", 
+    Icon: Phone, 
+    colorClass: "text-green-400", 
+    hoverBorder: "hover:border-green-500", 
+    bgIcon: "bg-green-900/30 border-green-800", 
+    groupHoverText: "group-hover:text-green-400" 
+  },
+  { 
+    href: "https://www.sec.gov.ph/investor-protection/email-us/", 
+    label: "SEC-EPD", 
+    desc: "Investment Protection", 
+    action: "REPORT FAKE INVESTMENTS", 
+    Icon: Scale, 
+    colorClass: "text-yellow-400", 
+    hoverBorder: "hover:border-yellow-500", 
+    bgIcon: "bg-yellow-900/30 border-yellow-800", 
+    groupHoverText: "group-hover:text-yellow-400" 
+  },
+  { 
+    href: "https://www.bsp.gov.ph/Pages/InclusiveFinance/ConsumerAssistanceChannels.aspx", 
+    label: "BSP", 
+    desc: "Central Bank", 
+    action: "FILE BANK COMPLAINT", 
+    Icon: Landmark, 
+    colorClass: "text-indigo-400", 
+    hoverBorder: "hover:border-indigo-500", 
+    bgIcon: "bg-indigo-900/30 border-indigo-800", 
+    groupHoverText: "group-hover:text-indigo-400" 
+  },
+  { 
+    href: "https://nbi.gov.ph/contact/", 
+    label: "NBI-CCD", 
+    desc: "Cybercrime Division", 
+    action: "REQUEST INVESTIGATION", 
+    Icon: Building2, 
+    colorClass: "text-slate-400", 
+    hoverBorder: "hover:border-slate-500", 
+    bgIcon: "bg-slate-900/30 border-slate-800", 
+    groupHoverText: "group-hover:text-slate-400" 
+  },
+  { 
+    href: "https://ntc.gov.ph/text-spam-spam-report/", 
+    label: "NTC", 
+    desc: "Telecom Commission", 
+    action: "REPORT SPAM NUMBER", 
+    Icon: Mail, 
+    colorClass: "text-orange-400", 
+    hoverBorder: "hover:border-orange-500", 
+    bgIcon: "bg-orange-900/30 border-orange-800", 
+    groupHoverText: "group-hover:text-orange-400" 
+  }
 ];
 
 const getVerdictStyle = (verdict: Verdict) => {
