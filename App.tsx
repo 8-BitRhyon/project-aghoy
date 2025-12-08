@@ -12,32 +12,6 @@ import PrivacyConsent from './components/PrivacyConsent';
 import { playSound } from './utils/sound';
 import { sanitizeText } from './utils/privacy';
 
-const [hasConsent, setHasConsent] = useState(false);
-
-useEffect(() => {
-  const consent = localStorage.getItem('aghoy_privacy_consent');
-  setHasConsent(consent === 'granted');
-}, []);
-
-useEffect(() => {
-  const checkConsent = () => {
-    const consent = localStorage.getItem('aghoy_privacy_consent');
-    setHasConsent(consent === 'granted');
-  };
-  
-  window.addEventListener('storage', checkConsent);
-
-}, []);
-
-<PrivacyConsent onConsentChange={(val) => setHasConsent(val)} />
-
-const handleAnalyze = async () => {
-  if (!hasConsent) {
-    setError("Please accept the Privacy Protocols to use the AI Scanner.");
-    playSound('alert');
-    return;
-  }
-
 // QUICK TRY EXAMPLES
 const SCAM_EXAMPLES = [
   { 
@@ -75,6 +49,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'SCANNER' | 'DOJO'>('SCANNER');
   const [showAbout, setShowAbout] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [hasConsent, setHasConsent] = useState(false);
   
   const [stats, setStats] = useState<UserStats>({ totalScans: 0, highRiskCount: 0, scamsBlocked: 0 });
   const [scanHistory, setScanHistory] = useState<AnalysisResult[]>([]);
@@ -82,6 +57,21 @@ const App: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Load Privacy Consent
+  useEffect(() => {
+    const consent = localStorage.getItem('aghoy_privacy_consent');
+    setHasConsent(consent === 'granted');
+
+    // Listen for storage events to update state across tabs/windows
+    const checkConsent = () => {
+       const updatedConsent = localStorage.getItem('aghoy_privacy_consent');
+       setHasConsent(updatedConsent === 'granted');
+    };
+    window.addEventListener('storage', checkConsent);
+    return () => window.removeEventListener('storage', checkConsent);
+  }, []);
+
+  // Load Stats & History
   useEffect(() => {
     const savedStats = localStorage.getItem('aghoy_stats');
     if (savedStats) setStats(JSON.parse(savedStats));
@@ -90,6 +80,7 @@ const App: React.FC = () => {
     if (savedHistory) setScanHistory(JSON.parse(savedHistory));
   }, []);
 
+  // Auto-resize Logic
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -98,6 +89,7 @@ const App: React.FC = () => {
     }
   }, [input]);
 
+  // Global Paste Listener
   useEffect(() => {
     const handleGlobalPaste = (e: ClipboardEvent) => {
       const items = e.clipboardData?.items;
@@ -158,6 +150,13 @@ const App: React.FC = () => {
 
   const handleAnalyze = async () => {
     if (!input && !selectedImage) return;
+
+    // PRIVACY GATEKEEPER
+    if (!hasConsent) {
+        setError("SYSTEM LOCKED: Please accept Privacy Protocols below to activate AI Scanner.");
+        playSound('alert');
+        return;
+    }
     
     playSound('click');
     setIsLoading(true);
@@ -214,7 +213,10 @@ const App: React.FC = () => {
           onClear={clearHistory}
        />
 
-      <PrivacyConsent />
+      {/* PRIVACY MODAL - Updates state when user clicks accept */}
+      {!hasConsent && (
+          <PrivacyConsent /> 
+      )}
 
       {/* Top Banner */}
       <div className="bg-slate-900 border-b-4 border-slate-700 p-4 sticky top-0 z-40 shadow-xl">
@@ -241,6 +243,7 @@ const App: React.FC = () => {
         </div>
       </div>
 
+      {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto mt-6 px-4 w-full">
         <div className="flex border-b-4 border-slate-700">
            <button 
@@ -268,6 +271,7 @@ const App: React.FC = () => {
         </div>
       </div>
 
+      {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 mb-8 w-full flex-grow">
         <div className="p-4 md:p-6 bg-slate-800 min-h-[60vh] border-x-4 border-b-4 border-slate-700 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
             
@@ -289,6 +293,7 @@ const App: React.FC = () => {
 
             {activeTab === 'SCANNER' ? (
             <div className="animate-fade-in">
+                {/* Stats & History Buttons */}
                 {stats.totalScans > 0 && !result && (
                    <div className="relative">
                        <StatsPanel stats={stats} />
@@ -304,6 +309,7 @@ const App: React.FC = () => {
                    </div>
                 )}
 
+                {/* Aghoy Character */}
                 <div className="flex flex-col items-center justify-center my-4 md:my-8">
                     <div className={`transition-all duration-500 ${
                         result?.verdict === Verdict.HIGH_RISK ? 'animate-pulse' : 
@@ -330,6 +336,7 @@ const App: React.FC = () => {
                     </p>
                 </div>
 
+                {/* Input Section */}
                 {!result && (
                     <div className="space-y-4 max-w-3xl mx-auto">
                         <div className="mb-4">
