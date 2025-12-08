@@ -40,8 +40,8 @@ const PrivacyConsent: React.FC = () => {
               INITIALIZE DATA PRIVACY PROTOCOLS?
             </h3>
             <p className="font-['VT323'] text-slate-300 text-lg md:text-xl leading-tight text-justify">
-              Project Aghoy uses AI to analyze messages. To help protect others, we collect 
-              <span className="text-cyan-400 font-bold"> anonymized scam patterns</span> (keywords, scam types). 
+              Project Aghoy uses <span className="text-white font-bold">Google Gemini AI</span> to analyze messages.
+              To help protect others, we collect <span className="text-cyan-400 font-bold">anonymized scam patterns</span>. 
               <br/><br/>
               <span className="text-red-400">WE NEVER STORE:</span> Your personal messages, names, phone numbers, or passwords.
             </p>
