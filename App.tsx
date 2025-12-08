@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Loader2, Search, Info, Lock, AlertOctagon, Image as ImageIcon, X, Bot, Coffee, History, ShieldAlert, Shield } from 'lucide-react';
+import { Loader2, Search, Info, Lock, AlertOctagon, Image as ImageIcon, X, Bot, Coffee, History, Shield } from 'lucide-react';
 import { analyzeContent } from './services/geminiService';
 import { AnalysisResult, Verdict } from './types';
 import ResultCard from './components/ResultCard';
@@ -49,7 +49,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'SCANNER' | 'DOJO'>('SCANNER');
   const [showAbout, setShowAbout] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [hasConsent, setHasConsent] = useState(false); // Consent State
+  const [hasConsent, setHasConsent] = useState(false);
   
   const [stats, setStats] = useState<UserStats>({ totalScans: 0, highRiskCount: 0, scamsBlocked: 0 });
   const [scanHistory, setScanHistory] = useState<AnalysisResult[]>([]);
@@ -179,11 +179,15 @@ const App: React.FC = () => {
         playSound('alert');
       }
     } catch (err: any) {
-      // Smart Error Handling
-      if (err.message.includes('429')) {
-         setError("SYSTEM OVERLOAD: Too many requests. Please wait a moment or check API quota.");
+      // Improved Error Handling for Quotas
+      const errorMessage = err.message || "";
+      
+      if (errorMessage.includes('429') || errorMessage.toLowerCase().includes('exhausted') || errorMessage.toLowerCase().includes('quota')) {
+         setError("⚠️ SYSTEM OVERLOAD: Daily AI Quota Exceeded. Please try again tomorrow.");
+      } else if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('fetch')) {
+         setError("📶 CONNECTION ERROR: Please check your internet connection.");
       } else {
-         setError(err.message || "Analysis Failed. Please try again.");
+         setError(`❌ ANALYSIS FAILED: ${errorMessage}`);
       }
       playSound('alert');
     } finally {
@@ -222,9 +226,9 @@ const App: React.FC = () => {
           onClear={clearHistory}
        />
 
-      {/* PRIVACY MODAL - Shows if no consent is recorded */}
+      {/* PRIVACY MODAL - Now synced with state */}
       {!hasConsent && (
-          <PrivacyConsent /> 
+          <PrivacyConsent onConsentChange={setHasConsent} /> 
       )}
 
       {/* Top Banner */}
@@ -302,7 +306,6 @@ const App: React.FC = () => {
 
             {activeTab === 'SCANNER' ? (
             <div className="animate-fade-in">
-                {/* Stats & History Buttons */}
                 {stats.totalScans > 0 && !result && (
                    <div className="relative">
                        <StatsPanel stats={stats} />
@@ -318,7 +321,6 @@ const App: React.FC = () => {
                    </div>
                 )}
 
-                {/* Aghoy Character */}
                 <div className="flex flex-col items-center justify-center my-4 md:my-8">
                     <div className={`transition-all duration-500 ${
                         result?.verdict === Verdict.HIGH_RISK ? 'animate-pulse' : 
@@ -345,7 +347,6 @@ const App: React.FC = () => {
                     </p>
                 </div>
 
-                {/* Input Section */}
                 {!result && (
                     <div className="space-y-4 max-w-3xl mx-auto">
                         <div className="mb-4">
@@ -448,6 +449,7 @@ const App: React.FC = () => {
             </div>
             ) : (
             <div className="animate-fade-in">
+                {/* DOJO TAB - Checks privacy consent */}
                 {hasConsent ? (
                     <Dojo selectedLanguage={language} />
                 ) : (
