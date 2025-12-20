@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createDojoChat } from '../services/geminiService';
-import { Chat } from "@google/genai";
+import { createDojoChat } from '../services/aiService';
 import { Send, RefreshCw, Trophy, HelpCircle, AlertCircle, Skull, ShieldAlert, Smartphone, WifiOff, Zap } from 'lucide-react';
 import { playSound } from '../utils/sound';
 
@@ -9,7 +8,7 @@ interface DojoProps {
 }
 
 const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
-  const [chatSession, setChatSession] = useState<Chat | null>(null);
+  const [chatSession, setChatSession] = useState<any | null>(null);
   const [messages, setMessages] = useState<{role: 'user' | 'model', text: string}[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -21,32 +20,17 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
   const handleError = (error: any) => {
     console.error("Dojo Error Debug:", error);
     setGameStatus('error');
-    
     const errString = error?.message || error?.toString() || JSON.stringify(error) || "";
     
-    // Check for Quota/Rate Limit Errors
-    if (
-        errString.includes("429") || 
-        errString.toLowerCase().includes("quota") || 
-        errString.toLowerCase().includes("exhausted") ||
-        errString.toLowerCase().includes("resource_exhausted")
-    ) {
+    if (errString.includes("429") || errString.toLowerCase().includes("quota")) {
        setErrorTitle("SYSTEM OVERLOAD");
-       setErrorMessage("Daily AI Quota Exceeded. The free tier limit has been reached. Please try again tomorrow.");
-    } 
-    // Check for Network Errors
-    else if (
-        errString.toLowerCase().includes("network") || 
-        errString.toLowerCase().includes("fetch") ||
-        errString.toLowerCase().includes("failed to fetch")
-    ) {
+       setErrorMessage("Daily AI Quota Exceeded. Please try again tomorrow.");
+    } else if (errString.toLowerCase().includes("network") || errString.toLowerCase().includes("fetch")) {
        setErrorTitle("CONNECTION ERROR");
-       setErrorMessage("Unable to reach AI servers. Please check your internet connection.");
-    } 
-    // Generic Errors
-    else {
+       setErrorMessage("Unable to reach AI servers. Check your internet.");
+    } else {
        setErrorTitle("SYSTEM FAILURE");
-       setErrorMessage("An unexpected error occurred. The simulation could not continue.");
+       setErrorMessage("An unexpected error occurred.");
     }
     playSound('alert');
   };
@@ -59,11 +43,16 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
     setErrorMessage('');
     
     try {
+      // 1. Initialize the new Secure Chat
       const chat = createDojoChat(selectedLanguage);
       setChatSession(chat);
       
-      const result = await chat.sendMessage({ message: "Start simulation." });
-      setMessages([{ role: 'model', text: result.text || "Hello!" }]);
+      // 2. Send plain text string
+      const result = await chat.sendMessage("Start simulation.");
+      
+      // 3. Read text from the new response format
+      const text = result.response.text();
+      setMessages([{ role: 'model', text: text || "Hello!" }]);
       playSound('scan');
     } catch (error: any) {
       handleError(error);
@@ -90,8 +79,10 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
     setIsLoading(true);
 
     try {
-      const result = await chatSession.sendMessage({ message: userMsg });
-      const responseText = result.text || "...";
+      // 4. Send plain text string
+      const result = await chatSession.sendMessage(userMsg);
+      const responseText = result.response.text() || "...";
+      
       setMessages(prev => [...prev, { role: 'model', text: responseText }]);
       
       if (responseText.includes("GAME OVER") || responseText.includes("Nahuli mo")) {
@@ -120,8 +111,6 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-        
-        {/* Mission Briefing Card */}
         <div className="mb-6 border-4 border-yellow-600 bg-yellow-900/20 p-4 pixel-corners-sm animate-fade-in font-['VT323']">
             <div className="flex items-start gap-4">
                 <div className="p-2 bg-yellow-600 text-black shrink-0 border-2 border-yellow-400 hidden md:block">
@@ -142,8 +131,6 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
         </div>
 
         <div className={`bg-slate-900 border-4 transition-all duration-500 ${getContainerBorder()}`}>
-            
-            {/* Header */}
             <div className={`p-4 border-b-4 border-slate-700 flex justify-between items-center transition-colors duration-500 ${
                 gameStatus === 'won' ? 'bg-green-900' : 
                 gameStatus === 'lost' ? 'bg-red-900' : 
@@ -186,13 +173,9 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
                 </button>
             </div>
 
-            {/* Chat Area Container */}
             <div className="h-[500px] bg-slate-950 relative overflow-hidden flex flex-col">
                 <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] z-20 bg-[length:100%_4px] opacity-10"></div>
-
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10 font-sans custom-scrollbar">
-                    
-                    {/* Timestamp */}
                     <div className="text-center py-2">
                         <span className="bg-slate-800/80 text-slate-400 text-xs px-3 py-1 rounded-full">
                             Encrypted Conversation • {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
@@ -216,7 +199,6 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
                         </div>
                     ))}
                     
-                    {/* Loading States */}
                     {isLoading && (
                         <div className="flex justify-start animate-fade-in">
                             <div className="bg-slate-800 border border-slate-700 text-slate-300 px-4 py-3 rounded-2xl rounded-tl-sm flex gap-1 items-center h-10">
@@ -227,7 +209,6 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
                         </div>
                     )}
 
-                    {/* ERROR SCREEN - DYNAMIC TITLE */}
                     {gameStatus === 'error' && (
                         <div className="my-4 mx-auto max-w-[90%] animate-fade-in font-['VT323']">
                              <div className="bg-orange-950/95 border-4 border-orange-500 p-6 text-center shadow-[0_0_30px_rgba(249,115,22,0.3)] backdrop-blur-sm rounded-lg">
@@ -246,7 +227,6 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
                         </div>
                     )}
 
-                    {/* Win/Loss Screens */}
                     {gameStatus === 'won' && (
                         <div className="my-4 mx-auto max-w-[90%] animate-fade-in font-['VT323']">
                              <div className="bg-green-900/95 border-4 border-green-500 p-6 text-center shadow-[0_0_30px_rgba(34,197,94,0.3)] backdrop-blur-sm rounded-lg">
@@ -267,12 +247,10 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
                              </div>
                         </div>
                     )}
-
                     <div ref={messagesEndRef} />
                 </div>
             </div>
 
-            {/* Input Area */}
             <div className="p-3 md:p-4 bg-slate-900 border-t-4 border-slate-700 flex gap-2">
                 {gameStatus === 'active' ? (
                     <>
@@ -300,7 +278,7 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
                         className={`w-full py-3 font-['Press_Start_2P'] text-white border-b-4 active:border-b-0 active:translate-y-1 transition-all text-sm md:text-base ${
                             gameStatus === 'won' ? 'bg-green-600 border-green-800 hover:bg-green-500' : 
                             gameStatus === 'lost' ? 'bg-red-600 border-red-800 hover:bg-red-500' :
-                            'bg-orange-600 border-orange-800 hover:bg-orange-500' // Error state color
+                            'bg-orange-600 border-orange-800 hover:bg-orange-500'
                         }`}
                     >
                         {gameStatus === 'won' ? 'START NEW SCENARIO' : gameStatus === 'error' ? 'RETRY CONNECTION' : 'RETRY SIMULATION'}

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 // Consolidated Lucide imports
 import { Loader2, Search, Info, Lock, AlertOctagon, Image as ImageIcon, X, Bot, Coffee, History, Shield, Volume2, VolumeX } from 'lucide-react';
-import { analyzeContent } from './services/geminiService';
+import { analyzeContent } from './services/aiService';
 import { AnalysisResult, Verdict } from './types';
 import ResultCard from './components/ResultCard';
 import Dojo from './components/Dojo';
