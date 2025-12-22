@@ -10,7 +10,6 @@ const PrivacyConsent: React.FC<PrivacyConsentProps> = ({ onConsentChange }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Check if user has already made a choice
     const consent = localStorage.getItem('aghoy_privacy_consent');
     if (!consent) {
       const timer = setTimeout(() => setIsVisible(true), 1000);
@@ -22,7 +21,6 @@ const PrivacyConsent: React.FC<PrivacyConsentProps> = ({ onConsentChange }) => {
     playSound(accepted ? 'success' : 'click');
     localStorage.setItem('aghoy_privacy_consent', accepted ? 'granted' : 'denied');
     
-    // CRITICAL FIX: Notify App.tsx immediately
     if (onConsentChange) {
       onConsentChange(accepted);
     }
@@ -48,7 +46,7 @@ const PrivacyConsent: React.FC<PrivacyConsentProps> = ({ onConsentChange }) => {
               INITIALIZE PRIVACY PROTOCOLS?
             </h3>
             <p className="font-['VT323'] text-slate-300 text-lg leading-tight text-justify">
-              Project Aghoy uses <span className="text-white font-bold">Google Gemini AI</span> to analyze messages. 
+              Project Aghoy uses <span className="text-white font-bold">Advanced AI</span> to analyze messages. 
               To help protect others, we collect <span className="text-cyan-400 font-bold">anonymized scam patterns</span>.
               <br/>
               <span className="text-red-400">WE NEVER STORE:</span> Your personal messages, names, phone numbers, or passwords.
