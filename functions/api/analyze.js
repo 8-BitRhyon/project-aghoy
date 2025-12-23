@@ -45,12 +45,18 @@ export const onRequestPost = async (context) => {
   try {
     const { messages, jsonMode } = await request.json();
     
-    // Sanitize Keys
+    // Sanitize Keys & Config
     const cerebrasKey = cleanKey(env.CEREBRAS_API_KEY);
     const groqKey = cleanKey(env.GROQ_API_KEY);
+    const accountId = env.CF_ACCOUNT_ID;
+    const gatewayId = env.CF_GATEWAY_ID;
 
-    if (!cerebrasKey && !groqKey) {
+    // Validate Config
+    if ((!cerebrasKey && !groqKey)) {
       throw new Error("API Keys are missing in Cloudflare Dashboard.");
+    }
+    if (!accountId || !gatewayId) {
+       throw new Error("AI Gateway Config (CF_ACCOUNT_ID, CF_GATEWAY_ID) missing in Dashboard.");
     }
 
     const commonHeaders = {
@@ -62,15 +68,19 @@ export const onRequestPost = async (context) => {
     let usedProvider = "";
     let errorLog = [];
 
-    // === ATTEMPT 1: CEREBRAS (GPT-OSS-120B) ===
+    const getGatewayUrl = (provider) => 
+      `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/${provider}/chat/completions`;
+
+    // === ATTEMPT 1: CEREBRAS (GPT-OSS-120B) via AI Gateway ===
     if (cerebrasKey) {
       try {
-        console.log("🤖 Trying Cerebras (GPT-OSS-120B)...");
-        const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
+        console.log("🤖 Trying Cerebras (GPT-OSS-120B) via AI Gateway...");
+        const response = await fetch(getGatewayUrl('cerebras'), {
           method: "POST",
           headers: { ...commonHeaders, "Authorization": `Bearer ${cerebrasKey}` },
           body: JSON.stringify({
-            model: "gpt-oss-120b",
+            model: "llama3.1-70b",
+            model: "gpt-oss-120b", 
             messages: messages,
             temperature: 0.7,
             max_tokens: 1024,
@@ -93,11 +103,11 @@ export const onRequestPost = async (context) => {
       }
     }
 
-    // === ATTEMPT 2: GROQ (GPT-OSS-120B) ===
+    // === ATTEMPT 2: GROQ (GPT-OSS-120B) via AI Gateway ===
     if (!resultText && groqKey) {
       try {
-        console.log("🤖 Trying Groq (GPT-OSS-120B)...");
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        console.log("🤖 Trying Groq (GPT-OSS-120B) via AI Gateway...");
+        const response = await fetch(getGatewayUrl('groq'), {
           method: "POST",
           headers: { ...commonHeaders, "Authorization": `Bearer ${groqKey}` },
           body: JSON.stringify({
