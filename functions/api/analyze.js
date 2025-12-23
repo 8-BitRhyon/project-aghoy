@@ -53,33 +53,24 @@ export const onRequestPost = async (context) => {
       throw new Error("API Keys are missing in Cloudflare Dashboard.");
     }
 
-    // === LEVEL 2 STEALTH HEADERS ===
-    const stealthHeaders = {
+    const commonHeaders = {
       "Content-Type": "application/json",
-      "Accept": "application/json",
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-      "Sec-Ch-Ua": '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
-      "Sec-Ch-Ua-Mobile": "?0",
-      "Sec-Ch-Ua-Platform": '"macOS"',
-      "Sec-Fetch-Site": "cross-site",
-      "Sec-Fetch-Mode": "cors",
-      "Sec-Fetch-Dest": "empty",
-      "Accept-Language": "en-US,en;q=0.9",
+      "User-Agent": "ProjectAghoy/1.0 (Cloudflare Pages)"
     };
 
     let resultText = "";
     let usedProvider = "";
     let errorLog = [];
 
-    // === ATTEMPT 1: CEREBRAS (Qwen 3) ===
+    // === ATTEMPT 1: CEREBRAS (GPT-OSS-120B) ===
     if (cerebrasKey) {
       try {
-        console.log("🤖 Trying Cerebras (Qwen)...");
+        console.log("🤖 Trying Cerebras (GPT-OSS-120B)...");
         const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
           method: "POST",
-          headers: { ...stealthHeaders, "Authorization": `Bearer ${cerebrasKey}` },
+          headers: { ...commonHeaders, "Authorization": `Bearer ${cerebrasKey}` },
           body: JSON.stringify({
-            model: "qwen-3-235b-a22b-instruct-2507",
+            model: "gpt-oss-120b",
             messages: messages,
             temperature: 0.7,
             max_tokens: 1024,
@@ -89,15 +80,12 @@ export const onRequestPost = async (context) => {
 
         if (!response.ok) {
           const errText = await response.text();
-          if (errText.includes("<!DOCTYPE html>")) {
-            throw new Error("Blocked by Cerebras Firewall (IP/Bot Detection).");
-          }
           throw new Error(`Status ${response.status}: ${errText}`);
         }
         
         const data = await response.json();
         resultText = data.choices[0].message.content;
-        usedProvider = "Cerebras Qwen 3";
+        usedProvider = "Cerebras GPT-OSS-120B";
 
       } catch (err) {
         console.warn(`Cerebras Failed: ${err.message}`);
@@ -105,15 +93,15 @@ export const onRequestPost = async (context) => {
       }
     }
 
-    // === ATTEMPT 2: GROQ (Moonshot Kimi) ===
+    // === ATTEMPT 2: GROQ (GPT-OSS-120B) ===
     if (!resultText && groqKey) {
       try {
-        console.log("🤖 Trying Groq (Moonshot)...");
+        console.log("🤖 Trying Groq (GPT-OSS-120B)...");
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
           method: "POST",
-          headers: { ...stealthHeaders, "Authorization": `Bearer ${groqKey}` },
+          headers: { ...commonHeaders, "Authorization": `Bearer ${groqKey}` },
           body: JSON.stringify({
-            model: "moonshotai/kimi-k2-instruct-0905",
+            model: "openai/gpt-oss-120b",
             messages: messages,
             temperature: 0.7,
             max_tokens: 1024,
@@ -128,7 +116,7 @@ export const onRequestPost = async (context) => {
 
         const data = await response.json();
         resultText = data.choices[0].message.content;
-        usedProvider = "Groq Moonshot";
+        usedProvider = "Groq GPT-OSS-120B";
 
       } catch (err) {
         errorLog.push(`Groq: ${err.message}`);
