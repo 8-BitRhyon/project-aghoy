@@ -1,4 +1,4 @@
-// === 1. RATE LIMIT CONFIG (Per Isolate) ===
+// === 1. RATE LIMIT CONFIG ===
 const RATE_LIMIT = 5;
 const WINDOW_MS = 60 * 1000;
 const ipRequestCounts = new Map();
@@ -6,73 +6,67 @@ const ipRequestCounts = new Map();
 const checkRateLimit = (ip) => {
   const now = Date.now();
   const clientData = ipRequestCounts.get(ip) || { count: 0, startTime: now };
-
   if (now - clientData.startTime > WINDOW_MS) {
     clientData.count = 1;
     clientData.startTime = now;
   } else {
     clientData.count += 1;
   }
-
   ipRequestCounts.set(ip, clientData);
   return clientData.count <= RATE_LIMIT;
 };
 
+// === 2. KEY SANITIZER ===
 const cleanKey = (key) => {
   if (!key) return "";
-  // Removes "Bearer " prefix if accidentally pasted, and strips whitespace/newlines
-  return key.toString().replace(/^(Bearer\s+)/i, "").trim();
+  return key.toString().replace(/["']/g, "").replace(/^(Bearer\s+)/i, "").trim();
 };
 
-// === 3. CLOUDFLARE HANDLER ===
 export const onRequestPost = async (context) => {
   const { request, env } = context;
 
-  // CORS Headers
+  // --- CORS Headers ---
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET,OPTIONS,PATCH,DELETE,POST,PUT',
-    'Access-Control-Allow-Headers': 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Methods': 'GET,OPTIONS,POST',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
 
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (request.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
+  // --- Rate Limit ---
   const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
-  
   if (!checkRateLimit(clientIp)) {
-    console.warn(`🛑 Rate limit exceeded for IP: ${clientIp}`);
-    return new Response(JSON.stringify({ 
-      error: 'Too Many Requests. Please wait a minute before scanning again.' 
-    }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ error: 'Too many requests. Please wait.' }), { 
+      status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 
   try {
     const { messages, jsonMode } = await request.json();
-    let resultText = "";
-    let usedProvider = "";
-    let errorLog = [];
-
+    
     // Sanitize Keys
     const cerebrasKey = cleanKey(env.CEREBRAS_API_KEY);
     const groqKey = cleanKey(env.GROQ_API_KEY);
 
-    // Fail early if keys are completely missing
     if (!cerebrasKey && !groqKey) {
-      throw new Error("API Keys are missing in Cloudflare 'Variables & Secrets'.");
+      throw new Error("API Keys are missing in Cloudflare Dashboard.");
     }
 
     const commonHeaders = {
       "Content-Type": "application/json",
-      "User-Agent": "Mozilla/5.0 (compatible; ProjectAghoy/1.0)"
+      "Accept": "application/json",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
     };
 
-    // === 4. ATTEMPT 1: CEREBRAS (Qwen 3) ===
+    let resultText = "";
+    let usedProvider = "";
+    let errorLog = [];
+
+    // === ATTEMPT 1: CEREBRAS (Qwen 3) ===
     if (cerebrasKey) {
       try {
-        console.log("🤖 Trying Cerebras (Qwen 3)...");
+        console.log("🤖 Trying Cerebras (Qwen)...");
         const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -89,7 +83,10 @@ export const onRequestPost = async (context) => {
         });
 
         if (!response.ok) {
-          const errText = await response.text(); 
+          const errText = await response.text();
+          if (errText.includes("<!DOCTYPE html>")) {
+            throw new Error("Blocked by Cerebras Firewall (HTML Response). WAF is rejecting the request.");
+          }
           throw new Error(`Status ${response.status}: ${errText}`);
         }
         
@@ -97,17 +94,16 @@ export const onRequestPost = async (context) => {
         resultText = data.choices[0].message.content;
         usedProvider = "Cerebras Qwen 3";
 
-      } catch (primaryError) {
-        const errorMsg = `Cerebras Failed: ${primaryError.message}`;
-        console.warn(errorMsg);
-        errorLog.push(errorMsg);
+      } catch (err) {
+        console.warn(`Cerebras Failed: ${err.message}`);
+        errorLog.push(`Cerebras: ${err.message}`);
       }
     }
 
-    // === 5. ATTEMPT 2: GROQ (Moonshot Kimi) ===
+    // === ATTEMPT 2: GROQ (Moonshot Kimi) ===
     if (!resultText && groqKey) {
       try {
-        console.log("🤖 Trying Groq Backup (Kimi)...");
+        console.log("🤖 Trying Groq Backup (Moonshot)...");
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -127,18 +123,18 @@ export const onRequestPost = async (context) => {
           const errText = await response.text();
           throw new Error(`Status ${response.status}: ${errText}`);
         }
-        
+
         const data = await response.json();
         resultText = data.choices[0].message.content;
-        usedProvider = "Groq Kimi";
+        usedProvider = "Groq Moonshot";
 
-      } catch (backupError) {
-        errorLog.push(`Groq Failed: ${backupError.message}`);
+      } catch (err) {
+        errorLog.push(`Groq: ${err.message}`);
       }
     }
 
     if (!resultText) {
-      throw new Error(`All providers failed. \n${errorLog.join("\n")}`);
+      throw new Error(`All providers failed. Details: ${errorLog.join(" | ")}`);
     }
 
     return new Response(JSON.stringify({ text: resultText, provider: usedProvider }), {
