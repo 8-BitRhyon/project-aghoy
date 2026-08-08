@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T12:49:24.723Z",
+  "generated_at": "2026-08-08T13:30:53.631Z",
   "seed": 20260807,
   "balanced": {
     "max_majority_ratio": 2
@@ -36,18 +36,29 @@
         "https://huggingface.co/datasets/rehan-ml/scamshield-scam-detection-data/resolve/main/test.csv",
         "https://huggingface.co/datasets/rehan-ml/scamshield-scam-detection-data/resolve/main/validation.csv"
       ]
+    },
+    {
+      "id": "kaggle-ph-spam",
+      "name": "Philippine Spam/Scam SMS (BwandoWando)",
+      "license": "cc-by-nc-sa-4.0",
+      "license_url": "https://www.kaggle.com/datasets/bwandowando/philippine-spam-sms-messages",
+      "attribution": "BwandoWando / Philippine Spam/Scam SMS Messages (CC BY-NC-SA 4.0)",
+      "license_note": "Owner-directed exception (2026-08-08): non-profit use, masked numbers, PH Taglish scam SMS gap.",
+      "files": [
+        "https://www.kaggle.com/api/v1/datasets/download/bwandowando/philippine-spam-sms-messages"
+      ]
     }
   ],
   "totals": {
-    "rows": 12468,
-    "scam": 4156,
-    "legit": 8312,
-    "redacted": 3989,
-    "redacted_pct": 32,
+    "rows": 15303,
+    "scam": 5101,
+    "legit": 10202,
+    "redacted": 4243,
+    "redacted_pct": 28,
     "by_channel": {
-      "job": 6596,
-      "sms": 2864,
-      "email": 3008
+      "job": 7957,
+      "sms": 4238,
+      "email": 3108
     },
     "per_source": {
       "llmgen-email": {
@@ -67,8 +78,14 @@
         "scam": 1471,
         "legit": 19701,
         "redacted_pct": 8
+      },
+      "kaggle-ph-spam": {
+        "rows": 945,
+        "scam": 945,
+        "legit": 0,
+        "redacted_pct": 3
       }
     }
   },
-  "corpus_sha256": "772049a005b793535c645c689df07610dadedd0766566e4e0e0d7dc1de0dd5a9"
+  "corpus_sha256": "08c8d2ef343e4924a9513512b3a302b6fbe5b46aa065544a8594cae74ed826e3"
 }

@@ -40,8 +40,8 @@ describe("fuseModelWithVerdict", () => {
   });
 
   it("uses the documented tinybert-v1 constants with floor BELOW threshold", () => {
-    expect(MODEL_THRESHOLD).toBe(0.22);
-    expect(MODEL_CONFIDENT_LEGIT_FLOOR).toBe(0.15);
+    expect(MODEL_THRESHOLD).toBe(0.72);
+    expect(MODEL_CONFIDENT_LEGIT_FLOOR).toBe(0.3);
     expect(MODEL_CONFIDENT_LEGIT_FLOOR).toBeLessThan(MODEL_THRESHOLD);
   });
 });

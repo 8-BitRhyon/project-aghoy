@@ -35,13 +35,20 @@ export interface TrainingRow {
 // licenses may enter the Aghoy training corpus.
 export const ALLOWED_LICENSES = new Set(["apache-2.0", "mit", "cc-by-4.0", "cc0-1.0"]);
 
-export const assertLicenseAllowed = (license: string, sourceId: string): void => {
-  if (!ALLOWED_LICENSES.has(license)) {
-    throw new Error(
-      `LICENSE GATE BLOCKED: "${sourceId}" declares "${license}", which is not in ` +
-        `[${[...ALLOWED_LICENSES].join(", ")}]. Aghoy only trains on permissive licenses.`
-    );
-  }
+// Non-commercial exceptions: licenses whose ShareAlike/NonCommercial terms
+// restrict redistribution, admitted ONLY on an explicit owner decision
+// (recorded in the source's `licenseNote`). These do NOT go in ALLOWED_LICENSES
+// so the default gate stays strict; a source opts in via `nonCommercial: true`.
+export const ALLOWED_NONCOMMERCIAL_LICENSES = new Set(["cc-by-nc-sa-4.0"]);
+
+export const assertLicenseAllowed = (license: string, sourceId: string, opts: { nonCommercial?: boolean } = {}): void => {
+  if (ALLOWED_LICENSES.has(license)) return;
+  if (opts.nonCommercial && ALLOWED_NONCOMMERCIAL_LICENSES.has(license)) return;
+  throw new Error(
+    `LICENSE GATE BLOCKED: "${sourceId}" declares "${license}", which is not in ` +
+      `[${[...ALLOWED_LICENSES].join(", ")}] and not an approved non-commercial exception ` +
+      `([${[...ALLOWED_NONCOMMERCIAL_LICENSES].join(", ")}]). Aghoy only trains on permissive licenses.`
+  );
 };
 
 // Minimal RFC-4180-ish CSV parser. Handles:
@@ -110,13 +117,18 @@ export interface CsvColumns {
 }
 
 // Map a header row to column indices. Throws if a required column is missing.
+// `label` is optional ONLY for constant-label sources (which pass a label
+// column name that is never read); resolveColumns returns -1 and the caller
+// supplies the label via constantLabel.
 export const resolveColumns = (header: string[], cols: CsvColumns): { text: number; label: number; channel: number | null } => {
   const lower = header.map((h) => h.trim().toLowerCase());
   const text = lower.indexOf(cols.text.toLowerCase());
-  const label = lower.indexOf(cols.label.toLowerCase());
+  const label = cols.label ? lower.indexOf(cols.label.toLowerCase()) : -1;
   const channel = cols.channel ? lower.indexOf(cols.channel.toLowerCase()) : -1;
   if (text === -1) throw new Error(`CSV missing text column "${cols.text}" in header: ${header.join(",")}`);
-  if (label === -1) throw new Error(`CSV missing label column "${cols.label}" in header: ${header.join(",")}`);
+  if (label === -1 && cols.label) {
+    throw new Error(`CSV missing label column "${cols.label}" in header: ${header.join(",")}`);
+  }
   return { text, label, channel: channel >= 0 ? channel : null };
 };
 
@@ -127,6 +139,9 @@ export interface MapRowOptions {
   // Maps raw label cell values to the canonical training label.
   labelMap: Record<string, TrainingLabel>;
   columns: { text: number; label: number; channel: number | null };
+  // When set, every row gets this label regardless of the label column. Used
+  // by datasets that ship only one class (e.g. a scam-only SMS collection).
+  constantLabel?: TrainingLabel;
 }
 
 // Build a TrainingRow from one parsed CSV row. Applies the Rejects layer to
@@ -135,8 +150,8 @@ export interface MapRowOptions {
 // corrupting the corpus.
 export const mapRow = (raw: string[], index: number, opts: MapRowOptions): TrainingRow => {
   const rawText = (raw[opts.columns.text] ?? "").trim();
-  const rawLabel = (raw[opts.columns.label] ?? "").trim().toLowerCase();
-  const label = opts.labelMap[rawLabel];
+  const rawLabel = opts.constantLabel ?? (raw[opts.columns.label] ?? "").trim().toLowerCase();
+  const label = opts.constantLabel ?? opts.labelMap[rawLabel];
   if (label === undefined) {
     throw new Error(`source "${opts.source}" row ${index}: unmapped label "${rawLabel}"`);
   }

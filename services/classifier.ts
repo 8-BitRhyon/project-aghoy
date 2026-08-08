@@ -47,13 +47,13 @@ export const MODEL_ID = `${MODEL_DIR}`;
 // so base "model" resolves to onnx/model_quantized.onnx (our committed int8 file).
 export const MODEL_FILE_NAME = "model";
 // Three-zone decision policy (non-overlapping, from the training protocol):
-//   p >= THRESHOLD (0.22, tuned on validation) => model wants to flag
-//   p <= FLOOR    (0.15)                        => model is confident LEGIT
-//   FLOOR < p < THRESHOLD                       => uncertain, model abstains
+//   p >= THRESHOLD (0.72, tuned on validation of the PH-augmented corpus) => flag
+//   p <= FLOOR    (0.30)                      => model is confident LEGIT
+//   FLOOR < p < THRESHOLD                     => uncertain, model abstains
 // FLOOR is BELOW THRESHOLD so "flag" and "escalate" are the same zone - a
 // flagged score always escalates, and a confident-legit score never does.
-export const MODEL_THRESHOLD = 0.22; // tuned on validation fold (tinybert-v1)
-export const MODEL_CONFIDENT_LEGIT_FLOOR = 0.15;
+export const MODEL_THRESHOLD = 0.72; // tuned on validation fold (tinybert-v1)
+export const MODEL_CONFIDENT_LEGIT_FLOOR = 0.3;
 
 export interface ClassifierVerdict {
   scamProb: number;

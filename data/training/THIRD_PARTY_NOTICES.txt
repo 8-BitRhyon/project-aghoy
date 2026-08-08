@@ -2,8 +2,11 @@ Project Aghoy training corpus - third-party notices
 ====================================================
 
 The corpus in this directory is built from the following externally published
-datasets. Each is included under its respective permissive license. Aghoy
-sanitizes every row through the Rejects PII layer before inclusion.
+datasets. Each is included under its respective license. Aghoy sanitizes every
+row through the Rejects PII layer before inclusion. Sources marked
+"non-commercial" carry NonCommercial/ShareAlike terms (e.g. CC BY-NC-SA) and
+are admitted on an explicit project-owner decision recorded in manifest.json
+(license_note). They restrict commercial reuse of the derived corpus/model.
 
 - Dizzzy0x00 / LLMGen-Phishing-Email-Dataset (Apache-2.0)
   License: apache-2.0
@@ -19,6 +22,11 @@ sanitizes every row through the Rejects PII layer before inclusion.
   License: mit
   Source:  https://huggingface.co/datasets/rehan-ml/scamshield-scam-detection-data
   Files:   https://huggingface.co/datasets/rehan-ml/scamshield-scam-detection-data/resolve/main/train.csv, https://huggingface.co/datasets/rehan-ml/scamshield-scam-detection-data/resolve/main/test.csv, https://huggingface.co/datasets/rehan-ml/scamshield-scam-detection-data/resolve/main/validation.csv
+
+- BwandoWando / Philippine Spam/Scam SMS Messages (CC BY-NC-SA 4.0)
+  License: cc-by-nc-sa-4.0 (NON-COMMERCIAL / SHARE-ALIKE)
+  Source:  https://www.kaggle.com/datasets/bwandowando/philippine-spam-sms-messages
+  Files:   https://www.kaggle.com/api/v1/datasets/download/bwandowando/philippine-spam-sms-messages
 
 
 The remainder of the corpus is Project Aghoy's own Taglish seed corpus and

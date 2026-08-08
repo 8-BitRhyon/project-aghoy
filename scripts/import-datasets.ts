@@ -65,6 +65,7 @@ const run = async (): Promise<void> => {
       license: string;
       license_url: string;
       attribution: string;
+      license_note?: string;
       files: string[];
     }[];
     totals: Record<string, unknown>;
@@ -83,14 +84,23 @@ const run = async (): Promise<void> => {
   for (const source of TRAINING_SOURCES) {
     // Enforce the license gate here, not just in getSource(): any source a
     // contributor adds to sources.ts is rejected before a single byte is
-    // downloaded unless it carries a permissive license.
-    assertLicenseAllowed(source.license, source.id);
+    // downloaded unless it carries a permissive license (or an approved
+    // non-commercial exception, flagged per-source by the owner).
+    assertLicenseAllowed(source.license, source.id, { nonCommercial: source.nonCommercial });
     console.log(`\n[${source.id}] ${source.name} (${source.license})`);
     const rows: ReturnType<typeof mapRow>[] = [];
     for (const file of source.files) {
       const local = join(TMP_DIR, file.path);
       await download(file.url, local);
-      const csv = parseCsv(readFileSync(local, "utf8"));
+      // Some sources (e.g. Kaggle) ship a zip with one CSV inside.
+      let csvText: string;
+      if (file.archiveEntry) {
+        const { extractArchiveEntry } = await import("./import-archive.ts");
+        csvText = extractArchiveEntry(local, file.archiveEntry);
+      } else {
+        csvText = readFileSync(local, "utf8");
+      }
+      const csv = parseCsv(csvText);
       const [header, ...data] = csv;
       const columns = resolveColumns(header, source.columns);
       console.log(`  ${file.path}: ${data.length.toLocaleString()} rows`);
@@ -101,6 +111,7 @@ const run = async (): Promise<void> => {
           channel: source.channel,
           labelMap: source.labelMap,
           columns,
+          constantLabel: source.constantLabel,
         }));
       }
     }
@@ -121,6 +132,7 @@ const run = async (): Promise<void> => {
       license: source.license,
       license_url: source.licenseUrl,
       attribution: source.attribution,
+      license_note: source.licenseNote,
       files: source.files.map((f) => f.url),
     });
   }
@@ -160,12 +172,15 @@ const notices = (): string =>
 ====================================================
 
 The corpus in this directory is built from the following externally published
-datasets. Each is included under its respective permissive license. Aghoy
-sanitizes every row through the Rejects PII layer before inclusion.
+datasets. Each is included under its respective license. Aghoy sanitizes every
+row through the Rejects PII layer before inclusion. Sources marked
+"non-commercial" carry NonCommercial/ShareAlike terms (e.g. CC BY-NC-SA) and
+are admitted on an explicit project-owner decision recorded in manifest.json
+(license_note). They restrict commercial reuse of the derived corpus/model.
 
 ${TRAINING_SOURCES.map(
   (s) => `- ${s.attribution}
-  License: ${s.license}
+  License: ${s.license}${s.nonCommercial ? " (NON-COMMERCIAL / SHARE-ALIKE)" : ""}
   Source:  ${s.licenseUrl}
   Files:   ${s.files.map((f) => f.url).join(", ")}
 `
