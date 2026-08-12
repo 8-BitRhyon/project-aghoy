@@ -185,6 +185,7 @@ export type DojoKey =
   | 'surpriseTitle'
   | 'surpriseMastery'
   | 'surprisePerfect'
+  | 'surpriseLevelUp'
   | 'caughtRealScam'
   | 'surpriseStreak'
   | 'challengeLabel'
@@ -293,6 +294,7 @@ export const DOJO_COPY: Record<AghoyLang, Partial<Record<DojoKey, string>>> = {
     surpriseTitle: 'BONUS! 🎉',
     surpriseMastery: 'Nakabisado mo ang isang scam family. Magaling!',
     surprisePerfect: 'Perpektong drill! Walang kamali-mali.',
+    surpriseLevelUp: 'LEVEL UP! Tumataas ang iyong shield. Bagong scam families ang nabuksan!',
     caughtRealScam: 'Nakasalamuha ka na ba ng totoong scam na ganito? Sabihin sa amin.',
     surpriseStreak: 'Umabot ka sa streak milestone!',
     challengeLabel: 'ACTIVE CHALLENGE',
@@ -399,6 +401,7 @@ export const DOJO_COPY: Record<AghoyLang, Partial<Record<DojoKey, string>>> = {
     surpriseTitle: 'BONUS! 🎉',
     surpriseMastery: 'You mastered a scam family. Well done!',
     surprisePerfect: 'Perfect drill! No mistakes.',
+    surpriseLevelUp: 'LEVEL UP! Your shield grew. New scam families are unlocked!',
     caughtRealScam: 'Seen a real scam like this? Tell us.',
     surpriseStreak: 'You hit a streak milestone!',
     challengeLabel: 'ACTIVE CHALLENGE',
@@ -505,6 +508,7 @@ export const DOJO_COPY: Record<AghoyLang, Partial<Record<DojoKey, string>>> = {
     surpriseTitle: 'BONUS! 🎉',
     surpriseMastery: 'Na-master nimo ang scam family. Maayo!',
     surprisePerfect: 'Perpekto nga drill! Wala sayop.',
+    surpriseLevelUp: 'LEVEL UP! Nagtubo ang imong shield. Bag-ong scam families ang naabli!',
     caughtRealScam: 'Nakasugat ka na ba og tinuod nga scam nga sama ani? Sultihi mi.',
     surpriseStreak: 'Naabot nimo ang streak milestone!',
     challengeLabel: 'ACTIVE CHALLENGE',
@@ -611,6 +615,7 @@ export const DOJO_COPY: Record<AghoyLang, Partial<Record<DojoKey, string>>> = {
     surpriseTitle: 'BONUS! 🎉',
     surpriseMastery: 'Na-master mo ti scam family. Nasayaat!',
     surprisePerfect: 'Perpekto a drill! Awan biddut.',
+    surpriseLevelUp: 'LEVEL UP! Immaysa ti shield mo. Nabuksan dagiti baro a scam families!',
     caughtRealScam: 'Nakasabatka kadi iti pudno a scam a kasdaytoy? Ibagam kadakami.',
     surpriseStreak: 'Naabot mo ti streak milestone!',
     challengeLabel: 'ACTIVE CHALLENGE',

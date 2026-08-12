@@ -267,9 +267,20 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
     // streak 3/7/14). The reward is persisted so it shows once and
     // survives reload. Positive-only, never shaming.
     const reward = detectSurpriseReward(withGoal, today);
-    const saved = reward
+    let saved = reward
       ? { ...withGoal, surpriseRewards: [...withGoal.surpriseRewards, reward] }
       : withGoal;
+    // Shield level-up: the ladder advanced (masteryShieldLevel) - surface it as
+    // a reward so the learner SEES their progression (it was silent before).
+    if (saved.shieldLevel > progress.shieldLevel) {
+      saved = {
+        ...saved,
+        surpriseRewards: [
+          ...saved.surpriseRewards,
+          { id: `level-up:${saved.shieldLevel}`, kind: 'level-up', awardedAt: today },
+        ],
+      };
+    }
     setTodayCorrect(nextTodayCorrect);
     setProgress(saved);
     // Persist the per-answer analytics batch (training_answers rows) alongside
@@ -432,7 +443,7 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
     if (progress.surpriseRewards.length === 0) return null;
     const last = progress.surpriseRewards[progress.surpriseRewards.length - 1];
     const kind = last.kind;
-    const label = kind === "first-mastery" ? D('surpriseMastery') : kind === "first-perfect" ? D('surprisePerfect') : D('surpriseStreak');
+    const label = kind === "first-mastery" ? D('surpriseMastery') : kind === "first-perfect" ? D('surprisePerfect') : kind === "level-up" ? D('surpriseLevelUp') : D('surpriseStreak');
     return (
       <div className="mb-4 border-2 border-yellow-500 bg-yellow-950/30 p-3 flex items-center gap-3 animate-fade-in">
         <Trophy className="w-6 h-6 text-yellow-400 shrink-0" />
