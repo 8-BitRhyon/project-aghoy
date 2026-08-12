@@ -152,6 +152,7 @@ export type DojoKey =
   | 'oneRuleLabel'
   | 'oneRuleBody'
   | 'startDrills'
+  | 'reviewDrills'
   | 'pickFamily'
   | 'drills'
   | 'status'
@@ -261,6 +262,7 @@ export const DOJO_COPY: Record<AghoyLang, Partial<Record<DojoKey, string>>> = {
     oneRuleLabel: 'Ang isang patakaran na nakakapigil sa karamihan ng scam:',
     oneRuleBody: 'walang bangko, walang wallet, walang gobyerno na humihingi ng OTP mo. I-practice ang iba sa ibaba.',
     startDrills: "SIMULAN ANG DRILLS NGAYONG ARAW",
+    reviewDrills: "REVIEW ANG MGA DUE DRILLS",
     pickFamily: 'Pumili ng scam family',
     drills: 'DRILLS',
     status: 'STATUS:',
@@ -368,6 +370,7 @@ export const DOJO_COPY: Record<AghoyLang, Partial<Record<DojoKey, string>>> = {
     oneRuleLabel: 'The one rule that stops most scams:',
     oneRuleBody: 'no bank, no wallet, no government office ever asks for your OTP. Practice the rest below.',
     startDrills: "START TODAY'S DRILLS",
+    reviewDrills: "REVIEW DUE DRILLS",
     pickFamily: 'Pick a scam family',
     drills: 'DRILLS',
     status: 'STATUS:',
@@ -475,6 +478,7 @@ export const DOJO_COPY: Record<AghoyLang, Partial<Record<DojoKey, string>>> = {
     oneRuleLabel: 'Ang usa ka lagda nga makapugong sa daghang scam:',
     oneRuleBody: 'walay bangko, walay wallet, walay gobyerno nga mangayo sa imong OTP. I-practice ang uban sa ubos.',
     startDrills: 'SUGOD ANG DRILLS KARON',
+    reviewDrills: 'REVIEW ANG MGA DUE DRILLS',
     pickFamily: 'Pilia ang scam family',
     drills: 'DRILLS',
     status: 'STATUS:',
@@ -582,6 +586,7 @@ export const DOJO_COPY: Record<AghoyLang, Partial<Record<DojoKey, string>>> = {
     oneRuleLabel: 'Ti maysa a pagannurotan a mangpatingga iti kaaduan a scam:',
     oneRuleBody: 'awan bangko, awan wallet, awan gobyerno nga agdawdawat ti OTP mo. I-practice ti dadduma iti baba.',
     startDrills: 'RUGI TI DRILLS ITA',
+    reviewDrills: 'REVIEW DAGITI DUE DRILLS',
     pickFamily: 'Piliem ti scam family',
     drills: 'DRILLS',
     status: 'STATUS:',
