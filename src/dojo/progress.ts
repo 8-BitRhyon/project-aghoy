@@ -53,7 +53,7 @@ export interface ChallengeState {
 
 export interface SurpriseReward {
   id: string;
-  kind: "first-mastery" | "streak-3" | "streak-7" | "streak-14" | "first-perfect";
+  kind: "first-mastery" | "streak-3" | "streak-7" | "streak-14" | "first-perfect" | "level-up";
   awardedAt: string;
 }
 

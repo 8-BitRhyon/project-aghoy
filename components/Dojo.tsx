@@ -5,7 +5,7 @@ import {
   Briefcase, Phone, Package, Zap, Users, ChevronRight, Bot, ArrowLeft,
   Landmark, Truck, FileSearch, Heart, TrendingUp, Scale, ScanLine, PhoneCall,
   Fingerprint, Banknote, HandCoins, HeartHandshake, Gift, CheckCheck, ChevronDown, Flame,
-  RotateCcw,
+  RotateCcw, Repeat,
   type LucideIcon,
 } from 'lucide-react';
 import { playSound } from '../utils/sound';
@@ -14,7 +14,7 @@ import { setDocumentLang } from '../src/utils/lang';
 import { td, normalizeLang, type DojoKey } from '../src/i18n';
 import { type Scenario, type ScenarioStep, type ScenarioDifficulty, type ScenarioFamily } from '../src/dojo/scenarios';
 import { ALL_SCENARIOS } from '../src/dojo/scenarios.generated';
-import { type LearnerProgress, emptyProgress, applyAnswer, sessionPlan, recordDailyGoal, streakStatus, familyMasteryState, isFamilyUnlocked, isTierUnlocked, transferFromLog, challengeProgress, CHALLENGE_DEFS, detectSurpriseReward, claimChallenge, challengeReward, buyStreakFreeze, STREAK_FREEZE_COST, setDailyGoal, DAILY_GOAL_OPTIONS } from '../src/dojo/progress';
+import { type LearnerProgress, emptyProgress, applyAnswer, sessionPlan, dueScenarios, recordDailyGoal, streakStatus, familyMasteryState, isFamilyUnlocked, isTierUnlocked, transferFromLog, challengeProgress, CHALLENGE_DEFS, detectSurpriseReward, claimChallenge, challengeReward, buyStreakFreeze, STREAK_FREEZE_COST, setDailyGoal, DAILY_GOAL_OPTIONS } from '../src/dojo/progress';
 import { saveTrainingProgress, loadTrainingProgress, saveSelfReport } from '../src/api/storageClient';
 import { type GameState, startScenario, answerStep, advanceFromFeedback, rankFor } from '../src/dojo/engine';
 import { createDojoChat } from '../services/aiService';
@@ -213,6 +213,19 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
     openScenario(plan[0]);
   };
 
+  // SRS review session: spaced-repetition picks the due (forgotten-adjacent)
+  // drills + a weak-family warmup, so learned material actually comes back.
+  const startReviewSession = () => {
+    playSound('click');
+    const plan = dueScenarios(progress, today, ALL_SCENARIOS.map((s) => s.id));
+    if (plan.length === 0) {
+      openFamily('ewallet');
+      return;
+    }
+    setSessionIds(plan.slice(1));
+    openScenario(plan[0]);
+  };
+
   const nextDrill = () => {
     playSound('click');
     if (sessionIds.length === 0) return;
@@ -267,9 +280,20 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
     // streak 3/7/14). The reward is persisted so it shows once and
     // survives reload. Positive-only, never shaming.
     const reward = detectSurpriseReward(withGoal, today);
-    const saved = reward
+    let saved = reward
       ? { ...withGoal, surpriseRewards: [...withGoal.surpriseRewards, reward] }
       : withGoal;
+    // Shield level-up: the ladder advanced (masteryShieldLevel) - surface it as
+    // a reward so the learner SEES their progression (it was silent before).
+    if (saved.shieldLevel > progress.shieldLevel) {
+      saved = {
+        ...saved,
+        surpriseRewards: [
+          ...saved.surpriseRewards,
+          { id: `level-up:${saved.shieldLevel}`, kind: 'level-up', awardedAt: today },
+        ],
+      };
+    }
     setTodayCorrect(nextTodayCorrect);
     setProgress(saved);
     // Persist the per-answer analytics batch (training_answers rows) alongside
@@ -432,7 +456,7 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
     if (progress.surpriseRewards.length === 0) return null;
     const last = progress.surpriseRewards[progress.surpriseRewards.length - 1];
     const kind = last.kind;
-    const label = kind === "first-mastery" ? D('surpriseMastery') : kind === "first-perfect" ? D('surprisePerfect') : D('surpriseStreak');
+    const label = kind === "first-mastery" ? D('surpriseMastery') : kind === "first-perfect" ? D('surprisePerfect') : kind === "level-up" ? D('surpriseLevelUp') : D('surpriseStreak');
     return (
       <div className="mb-4 border-2 border-yellow-500 bg-yellow-950/30 p-3 flex items-center gap-3 animate-fade-in">
         <Trophy className="w-6 h-6 text-yellow-400 shrink-0" />
@@ -591,6 +615,15 @@ const Dojo: React.FC<DojoProps> = ({ selectedLanguage }) => {
       >
         <Zap className="w-4 h-4" /> {D('startDrills')}
       </button>
+
+      {dueScenarios(progress, today, ALL_SCENARIOS.map((s) => s.id)).length > 0 && (
+        <button
+          onClick={startReviewSession}
+          className="w-full mb-6 px-5 py-3 bg-indigo-800 hover:bg-indigo-700 text-white font-['Press_Start_2P'] text-xs md:text-sm border-b-4 border-indigo-950 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2 min-h-[44px]"
+        >
+          <Repeat className="w-4 h-4" /> {D('reviewDrills')}
+        </button>
+      )}
 
       <h4 className="text-slate-300 font-['Press_Start_2P'] text-xs mb-3 uppercase">{D('pickFamily')}</h4>
 
